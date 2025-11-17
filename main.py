@@ -19,22 +19,29 @@ def load_categories():
 if "categories" not in st.session_state:
     st.session_state.categories = load_categories() or ["工作灵感", "网摘", "生活随笔","沙雕网友","待办事项"]
 
-# --- 添加新栏目 ---
-st.subheader("➕ 添加新栏目")
-new_category = st.text_input("输入新栏目名称：", placeholder="例如：灵感记录 / 项目日志")
+if "show_add_category" not in st.session_state:
+    st.session_state.show_add_category = False
 
-if st.button("添加栏目"):
-    if new_category.strip():
-        cat_name = new_category.strip()
-        if cat_name not in st.session_state.categories:
-            st.session_state.categories.append(cat_name)
-            # 创建对应 txt 文件
-            open(os.path.join(BASE_DIR, f"{cat_name}.txt"), "a", encoding="utf-8").close()
-            st.success(f"✅ 已添加新栏目「{cat_name}」！")
+# --- 隐藏/显示添加栏目 ---
+if st.button("➕ 添加新栏目"):
+    st.session_state.show_add_category = not st.session_state.show_add_category
+
+if st.session_state.show_add_category:
+    st.subheader("添加新栏目")
+    new_category = st.text_input("输入新栏目名称：", placeholder="例如：灵感记录 / 项目日志")
+
+    if st.button("确认添加栏目"):
+        if new_category.strip():
+            cat_name = new_category.strip()
+            if cat_name not in st.session_state.categories:
+                st.session_state.categories.append(cat_name)
+                # 创建对应 txt 文件
+                open(os.path.join(BASE_DIR, f"{cat_name}.txt"), "a", encoding="utf-8").close()
+                st.success(f"✅ 已添加新栏目「{cat_name}」！")
+            else:
+                st.warning("该栏目已存在。")
         else:
-            st.warning("该栏目已存在。")
-    else:
-        st.warning("请输入有效的栏目名称。")
+            st.warning("请输入有效的栏目名称。")
 
 st.divider()
 
@@ -56,22 +63,24 @@ if st.button("💾 保存到该栏目"):
     else:
         st.warning("请输入内容后再保存。")
 
-# --- 下载并自动清空 ---
+# --- 下载并自动清空（需密码） ---
 if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
-    with open(file_path, "r", encoding="utf-8") as f:
-        content = f.read()
+    password = st.text_input("请输入下载密码", type="password")
+    if st.button(f"📥 下载「{category}」内容（下载后自动清空）"):
+        if password == "921110":
+            with open(file_path, "r", encoding="utf-8") as f:
+                content = f.read()
 
-    download_button = st.download_button(
-        label=f"📥 下载「{category}」内容（下载后自动清空）",
-        data=content,
-        file_name=f"{category}.txt",
-        mime="text/plain",
-        key=f"download_{category}"
-    )
-
-    # 如果点击了下载按钮，就清空文件
-    if download_button:
-        open(file_path, "w", encoding="utf-8").close()
-        st.success(f"「{category}」内容已下载并清空。")
+            st.download_button(
+                label=f"点击下载「{category}」内容",
+                data=content,
+                file_name=f"{category}.txt",
+                mime="text/plain"
+            )
+            # 清空文件
+            open(file_path, "w", encoding="utf-8").close()
+            st.success(f"「{category}」内容已下载并清空。")
+        else:
+            st.error("❌ 密码错误，无法下载内容。")
 else:
     st.info(f"「{category}」目前还没有内容。")
