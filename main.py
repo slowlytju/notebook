@@ -67,7 +67,7 @@ if st.button("💾 保存到该栏目"):
 if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
     password = st.text_input("请输入下载密码", type="password")
     if st.button(f"📥 下载「{category}」内容（下载后自动清空）"):
-        if password == "921110":
+        if password == "kkkkk":
             with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
